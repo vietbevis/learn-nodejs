@@ -27,7 +27,8 @@ const configSchema = z.object({
   PROTOCOL: z.string(),
   PRODUCTION: z.enum(['true', 'false']).transform((val) => val === 'true'),
   COOKIE_MODE: z.enum(['true', 'false']).transform((val) => val === 'true'),
-  PRODUCTION_URL: z.string()
+  PRODUCTION_URL: z.string(),
+  API_KEY: z.string()
 })
 
 const configServer = configSchema.safeParse(process.env)

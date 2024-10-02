@@ -26,11 +26,7 @@ export const FormRegisterSchema = z
       })
       .regex(/[$&+,:;=?@#|'<>.^*()%!-]/, {
         message: 'At least one special character.'
-      }),
-    roles: z
-      .array(z.string())
-      .min(1, { message: 'Role is required' })
-      .optional()
+      })
   })
   .strict() // Bắt buộc phải có các field được định nghĩa trong schema
   .strip() // Loại bỏ các field không được định nghĩa trong schema

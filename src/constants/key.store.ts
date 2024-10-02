@@ -5,7 +5,8 @@ const KEY = {
   },
   HEADER: {
     AUTHORIZATION: 'Authorization',
-    API_KEY: 'x-api-key'
+    API_KEY: 'x-api-key',
+    CLIENT_ID: 'x-client-id'
   }
 }
 

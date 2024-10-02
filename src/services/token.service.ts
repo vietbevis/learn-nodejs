@@ -1,30 +1,30 @@
+import { BadRequestError } from '@/core/error.response'
 import tokenModel, { TToken } from '@/models/token.model'
-import { ObjectId, Types } from 'mongoose'
 
 interface IPayload {
-  userId: ObjectId
+  userId: string
   publicKey: string
-  refreshToken: string
 }
 
 interface ITokenService {
   create: (payload: IPayload) => Promise<any>
+  delete: (userId: string) => Promise<any>
   findByUserId: (userId: string) => Promise<TToken | null>
 }
 
 const TokenService: ITokenService = {
-  create: async (payload) => {
-    const filter = { user: payload.userId }
-    const update = {
-      publicKey: payload.publicKey,
-      refreshToken: payload.refreshToken
-    }
-    const options = { upsert: true, new: true }
-
-    return await tokenModel.findOneAndUpdate(filter, update, options)
+  create: async ({ userId, publicKey }) => {
+    return tokenModel.findOneAndUpdate(
+      { user: userId },
+      { publicKey },
+      { upsert: true, new: true }
+    )
+  },
+  delete: async (userId) => {
+    return tokenModel.deleteOne({ user: userId })
   },
   findByUserId: async (userId) => {
-    return await tokenModel.findOne({ user: userId })
+    return tokenModel.findOne({ user: userId })
   }
 }
 

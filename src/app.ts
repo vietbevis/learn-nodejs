@@ -7,10 +7,13 @@ import routes from './routes'
 import getTimestamp from './utils/getTimestamp'
 import Database from './config/mongodb'
 import cookieParser from 'cookie-parser'
+import cors from 'cors'
+import { corsOptions } from './config/cors'
 
 const app = express()
 
 // Middleware
+app.use(cors(corsOptions))
 app.use(morgan('dev'))
 app.use(helmet())
 app.use(compression())

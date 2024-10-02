@@ -19,7 +19,6 @@ const AuthService: IAuthService = {
     if (!(await user.comparePassword(password)))
       throw new BadRequestError('Password is incorrect')
 
-    // Lọc ra các field cần thiết để trả về
     return user
   },
   register: async (payload) => {

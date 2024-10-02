@@ -1,9 +1,13 @@
 import envConfig from '@/config/env.config'
 import { ERole } from '@/constants/enums'
+import { BadRequestError } from '@/core/error.response'
 import jwt from 'jsonwebtoken'
+import crypto from 'crypto'
+import TokenService from '@/services/token.service'
+import { ObjectId } from 'mongoose'
 
 interface IPayload {
-  id: string
+  _id: string
   email: string
   roles: ERole[]
 }
@@ -16,12 +20,10 @@ interface ITokenPayload {
 
 interface IJwtProvider {
   generateToken: (
-    user: IPayload,
-    secretKey: string,
-    expired: string
-  ) => Promise<string>
-  generateAccessToken: (user: IPayload) => Promise<string>
-  generateRefreshToken: (user: IPayload) => Promise<string>
+    user: IPayload
+  ) => Promise<{ accessToken: string; refreshToken: string; publicKey: string }>
+  // generateAccessToken: (user: IPayload) => Promise<string>
+  // generateRefreshToken: (user: IPayload) => Promise<string>
   verifyToken: (token: string, secretKey: string) => Promise<ITokenPayload>
   verifyAccessToken: (token: string) => Promise<ITokenPayload>
   verifyRefreshToken: (token: string) => Promise<ITokenPayload>
@@ -34,12 +36,34 @@ const JwtProvider: IJwtProvider = {
    * secretKey: chuỗi bí mật
    * expired: thời gian sống của token
    */
-  generateToken: async (user, secretKey, expired) => {
+  generateToken: async (user) => {
     try {
+      const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
+        modulusLength: 2048,
+        publicKeyEncoding: {
+          type: 'pkcs1',
+          format: 'pem'
+        },
+        privateKeyEncoding: {
+          type: 'pkcs1',
+          format: 'pem'
+        }
+      })
+
       // Tạo token - thuật toán mặc định là HS256
-      return jwt.sign({ user }, secretKey, { expiresIn: expired })
+      const [accessToken, refreshToken] = await Promise.all([
+        jwt.sign({ user }, privateKey, {
+          expiresIn: envConfig.ACCESS_TOKEN_EXPIRES_IN,
+          algorithm: 'RS256'
+        }),
+        jwt.sign({ user }, privateKey, {
+          expiresIn: envConfig.REFRESH_TOKEN_EXPIRES_IN,
+          algorithm: 'RS256'
+        })
+      ])
+      return { accessToken, refreshToken, publicKey }
     } catch (error: any) {
-      throw new Error(error)
+      throw new BadRequestError(error)
     }
   },
   /*
@@ -48,33 +72,30 @@ const JwtProvider: IJwtProvider = {
    * secretKey: chuỗi bí mật
    */
   verifyToken: async (token, secretKey) => {
-    try {
-      // Verify token
-      return jwt.verify(token, secretKey) as ITokenPayload
-    } catch (error: any) {
-      throw new Error(error)
-    }
+    return jwt.verify(token, secretKey, {
+      algorithms: ['RS256']
+    }) as ITokenPayload
   },
   /*
    * Func tạo access token
    */
-  generateAccessToken: async (user) => {
-    return JwtProvider.generateToken(
-      user,
-      envConfig.ACCESS_TOKEN_SECRET,
-      envConfig.ACCESS_TOKEN_EXPIRES_IN
-    )
-  },
+  // generateAccessToken: async (user) => {
+  //   return JwtProvider.generateToken(
+  //     user,
+  //     envConfig.ACCESS_TOKEN_SECRET,
+  //     envConfig.ACCESS_TOKEN_EXPIRES_IN
+  //   )
+  // },
   /*
    * Func tạo refresh token
    */
-  generateRefreshToken: async (user) => {
-    return JwtProvider.generateToken(
-      user,
-      envConfig.REFRESH_TOKEN_SECRET,
-      envConfig.REFRESH_TOKEN_EXPIRES_IN
-    )
-  },
+  // generateRefreshToken: async (user) => {
+  //   return JwtProvider.generateToken(
+  //     user,
+  //     envConfig.REFRESH_TOKEN_SECRET,
+  //     envConfig.REFRESH_TOKEN_EXPIRES_IN
+  //   )
+  // },
   /*
    * Func verify access token
    */

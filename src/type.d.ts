@@ -3,7 +3,7 @@ import { ERole } from './constants/enums'
 // Global type definitions
 
 interface IPayload {
-  id: string
+  _id: string
   email: string
   roles: ERole[]
 }

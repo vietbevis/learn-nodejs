@@ -1,4 +1,6 @@
+import { ForbiddenError } from '@/core/error.response'
 import { CreatedResponse } from '@/core/success.response'
+import TokenService from '@/services/token.service'
 import UserService from '@/services/user.service'
 import { CreateUserType, ParamsUserType } from '@/validations/user.schema'
 import { RequestHandler } from 'express'
@@ -17,8 +19,10 @@ const UserController: IUserController = {
   update: async (req, res) => {
     res.send(`Update user with id: ${req.params.userId}`)
   },
-  logout: async (_req, res) => {
-    res.send('Logout')
+  logout: async (req, res) => {
+    if (!req.user?._id) throw new ForbiddenError()
+    await TokenService.delete(req.user._id)
+    new CreatedResponse('Logout successfully').send(res)
   }
 }
 

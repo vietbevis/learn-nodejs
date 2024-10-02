@@ -15,14 +15,7 @@ const TokenSchema = new Schema(
     },
     publicKey: {
       type: String,
-      required: true
-    },
-    refreshToken: {
-      type: String
-    },
-    refreshTokenUsed: {
-      type: Array,
-      default: []
+      default: ''
     }
   },
   {

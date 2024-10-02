@@ -8,4 +8,8 @@ const omitFields = (data: any, fields: string[]) => {
   return _.omit(data, fields)
 }
 
-export { selectFields, omitFields }
+const userResponse = (user: any) => {
+  return omitFields(user, ['roles', 'password'])
+}
+
+export { selectFields, omitFields, userResponse }

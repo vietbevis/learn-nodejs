@@ -7,7 +7,7 @@ import { LoginBodyType, RegisterBodyType } from '@/validations/auth.schema'
 import AuthService from '@/services/auth.service'
 import { RequestHandler } from 'express'
 import ms from 'ms'
-import crypto from 'crypto'
+import TokenService from '@/services/token.service'
 
 interface IAuthController {
   login: RequestHandler<unknown, unknown, LoginBodyType, unknown>
@@ -21,14 +21,15 @@ const AuthController: IAuthController = {
 
     // Tạo token
     const TokenPayload = {
-      id: result.id,
+      _id: result.id,
       email: result.email,
       roles: result.roles.map((role: TRole) => role.name)
     }
-    const [accessToken, refreshToken] = await Promise.all([
-      JwtProvider.generateAccessToken(TokenPayload),
-      JwtProvider.generateRefreshToken(TokenPayload)
-    ])
+    const { accessToken, refreshToken, publicKey } =
+      await JwtProvider.generateToken(TokenPayload)
+
+    // Lưu token vào db
+    await TokenService.create({ userId: result.id, publicKey })
 
     // Set cookie nếu ở chế độ cookie mode
     if (envConfig.COOKIE_MODE) {
@@ -46,26 +47,10 @@ const AuthController: IAuthController = {
       })
     }
 
-    const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
-      modulusLength: 2048,
-      publicKeyEncoding: {
-        type: 'pkcs1',
-        format: 'pem'
-      },
-      privateKeyEncoding: {
-        type: 'pkcs1',
-        format: 'pem'
-      }
-    })
-
-    console.log('🚀 ~ login ~ { privateKey, publicKey }:', {
-      privateKey,
-      publicKey
-    })
-
     new CreatedResponse('Login successfully', {
       accessToken,
-      refreshToken
+      refreshToken,
+      clientId: result.id
     }).send(res)
   },
   async register(req, res) {
