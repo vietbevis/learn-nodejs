@@ -1,5 +1,6 @@
 import { express } from 'express'
 import { ERole } from './constants/enums'
+import { Document, DocumentQuery } from 'mongoose'
 // Global type definitions
 
 interface IPayload {
