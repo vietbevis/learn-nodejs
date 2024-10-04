@@ -40,3 +40,10 @@
 - B4: Tạo cặp khóa publicKey và privateKey mới
 - B5: Sinh accessToken, refreshToken dựa trên privateKey mới
 - B6: Cập nhật lại publicKey và refreshToken vào db
+
+# Bugs
+
+## Post Service
+
+- Check lại tác giả của 1 bài viết có status private mới có thể get bài viết đó
+- Tương tự nếu status là friends thì chỉ bạn bè của tác giả và tác giả mới có thể get bài viết đó

@@ -23,7 +23,8 @@ const PostSchema = new Schema(
     },
     updatedBy: {
       type: Schema.Types.ObjectId,
-      ref: 'user'
+      ref: 'user',
+      required: true
     },
     images: [
       {

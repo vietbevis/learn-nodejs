@@ -11,6 +11,6 @@ interface IPayload {
 
 declare module 'express-serve-static-core' {
   interface Request {
-    user?: IPayload
+    user: IPayload
   }
 }
